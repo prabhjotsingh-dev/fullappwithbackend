@@ -1,192 +1,110 @@
-import { useState } from "react"
-import { NavLink } from "react-router"
+import { userLogin } from "../api/api";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Link } from "react-router";
+import { useContext } from "react";
+import { UserContext } from "../contextApi/UserContextProvider";
+import { useNavigate } from "react-router";
+import { useForm } from "react-hook-form";
 
+interface loginUserDetails {
+  username: string;
+  password: string;
+}
 const Login = () => {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [rememberMe, setRememberMe] = useState(false)
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
-  const [isLoading, setIsLoading] = useState(false)
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<loginUserDetails>();
+  const navigator = useNavigate();
+  const { setUserData, setLogedin } = useContext(UserContext)!;
 
-  const validateForm = () => {
-    const newErrors: { email?: string; password?: string } = {}
-    
-    if (!email) {
-      newErrors.email = "Email is required"
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = "Email is invalid"
+  const onSubmit = async (data: loginUserDetails) => {
+    console.log(data);
+    try {
+      const apiResponse = await userLogin(data);
+      if (apiResponse) {
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        localStorage.removeItem("image");
+        localStorage.removeItem("userInfo");
+      }
+      localStorage.setItem("accessToken", apiResponse.accessToken);
+      localStorage.setItem("refreshToken", apiResponse.refreshToken);
+      localStorage.setItem("image", apiResponse.image);
+      setUserData(apiResponse);
+      setLogedin(true);
+      navigator("/");
+    } catch (error) {
+      alert("user name or password wrong");
+      console.error(error);
     }
-    
-    if (!password) {
-      newErrors.password = "Password is required"
-    } else if (password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters"
-    }
-    
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (validateForm()) {
-      setIsLoading(true)
-      // Simulate API call
-      setTimeout(() => {
-        console.log("Login attempt:", { email, password, rememberMe })
-        setIsLoading(false)
-      }, 1500)
-    }
-  }
+  };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-blue-50 to-blue-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md">
-        {/* Card Container */}
-        <div className="bg-white rounded-xl shadow-2xl p-8 space-y-6">
-          {/* Header */}
-          <div className="text-center">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
-            <p className="text-gray-600">Sign in to your account</p>
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-slate-50 via-sky-50 to-indigo-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+      <div className="w-full max-w-md p-8 space-y-6 bg-card rounded-lg border shadow-sm">
+        <div className="space-y-2 text-center">
+          <h1 className="text-3xl font-bold">Welcome back</h1>
+          <p className="text-muted-foreground">Enter your credentials to access your account</p>
+        </div>
+
+        <form className="space-y-4" onSubmit={handleSubmit(onSubmit)} noValidate>
+          <div className="space-y-2">
+            <label htmlFor="username" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              Username
+            </label>
+            <Input
+              id="username"
+              type="text"
+              placeholder="Enter your username"
+              autoComplete="username"
+              {...register("username", { required: `User Name is required` })}
+            />
+            {errors.username && <p className="text-red-500 text-sm">{errors.username.message as string}</p>}
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="password" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              Password
+            </label>
+            <Input id="password" type="password" autoComplete="password" {...register("password", {})} />
+            {errors.password && <p className="text-red-500 text-sm">{errors.password.message as string}</p>}
           </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Email Input */}
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
-              </label>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
               <input
-                type="email"
-                id="email"
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value)
-                  if (errors.email) setErrors({ ...errors, email: "" })
-                }}
-                placeholder="you@example.com"
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${
-                  errors.email ? "border-red-500 bg-red-50" : "border-gray-300 bg-gray-50"
-                }`}
+                id="remember"
+                type="checkbox"
+                name="remember"
+                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                checked
+                onChange={() => {}}
               />
-              {errors.email && (
-                <p className="text-red-500 text-sm mt-1 flex items-center">
-                  <span className="mr-1">⚠</span> {errors.email}
-                </p>
-              )}
-            </div>
-
-            {/* Password Input */}
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                Password
+              <label htmlFor="remember" className="text-sm text-muted-foreground">
+                Remember me
               </label>
-              <input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value)
-                  if (errors.password) setErrors({ ...errors, password: "" })
-                }}
-                placeholder="••••••••"
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${
-                  errors.password ? "border-red-500 bg-red-50" : "border-gray-300 bg-gray-50"
-                }`}
-              />
-              {errors.password && (
-                <p className="text-red-500 text-sm mt-1 flex items-center">
-                  <span className="mr-1">⚠</span> {errors.password}
-                </p>
-              )}
             </div>
-
-            {/* Remember Me & Forgot Password */}
-            <div className="flex items-center justify-between">
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500 cursor-pointer"
-                />
-                <span className="ml-2 text-sm text-gray-600 cursor-pointer">Remember me</span>
-              </label>
-              <NavLink
-                to="/ForgetModule"
-                className="text-sm text-blue-600 hover:text-blue-700 font-medium transition"
-              >
-                Forgot Password?
-              </NavLink>
-            </div>
-
-            {/* Login Button */}
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-linear-to-r from-blue-600 to-blue-700 text-white font-semibold py-2 px-4 rounded-lg hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading ? (
-                <span className="flex items-center justify-center">
-                  <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                      fill="none"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  Signing in...
-                </span>
-              ) : (
-                "Sign In"
-              )}
-            </button>
-          </form>
-
-          {/* Divider */}
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">Don't have an account?</span>
-            </div>
+            <Link to="/forgetpassword" className="text-sm text-primary hover:underline">
+              Forgot password?
+            </Link>
           </div>
 
-          {/* Sign Up Link */}
-          <NavLink
-            to="/Signup"
-            className="w-full block text-center bg-gray-100 text-gray-900 font-semibold py-2 px-4 rounded-lg hover:bg-gray-200 transition"
-          >
-            Create Account
-          </NavLink>
+          <Button type="submit" className="w-full">
+            Sign in
+          </Button>
+        </form>
 
-          {/* Footer */}
-          <p className="text-center text-xs text-gray-500">
-            By signing in, you agree to our{" "}
-            <a href="#" className="text-blue-600 hover:text-blue-700">
-              Terms of Service
-            </a>{" "}
-            and{" "}
-            <a href="#" className="text-blue-600 hover:text-blue-700">
-              Privacy Policy
-            </a>
-          </p>
+        <div className="text-center text-sm">
+          <span className="text-muted-foreground">Don't have an account? </span>
+          <Link to="/signup" className="text-primary hover:underline">
+            Sign up
+          </Link>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Login
+export default Login;
