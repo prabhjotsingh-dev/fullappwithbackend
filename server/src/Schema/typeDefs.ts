@@ -17,4 +17,5 @@ type Query {
   users: [User]
   user(id: Int!): User
   todos: [Todo]
+  todosByUser(userId: Int!): [Todo]
 }`;
