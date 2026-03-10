@@ -1,6 +1,5 @@
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { CheckCircle2Icon } from "lucide-react";
-import { useState } from "react";
 import { AlertDialog, AlertDialogCancel, AlertDialogContent } from "../ui/alert-dialog";
 const CustomAlert = ({ openAlert, title, description , onClick }: { openAlert: true | false; title: string; description: string ; onClick:()=>void}) => {
   

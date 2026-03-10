@@ -40,6 +40,7 @@ type Query {
 
 type Mutation {
   login(username: String!, password: String!): AuthPayload
+  refreshToken(token: String!): AuthPayload
   addTodo(input: AddTodoInput!): Todo
   updateTodo(input: UpdateTodoInput!): Todo
   deleteTodo(id: Int!): Boolean

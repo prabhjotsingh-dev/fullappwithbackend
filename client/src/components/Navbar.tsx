@@ -17,8 +17,6 @@ const Navbar = () => {
   const Logout = () => {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
-    localStorage.removeItem("image");
-    localStorage.removeItem("userInfo");
     setLogedin(false);
     setUserData({
       accessToken: "",
@@ -48,7 +46,6 @@ const Navbar = () => {
   return (
     <nav className="bg-linear-to-r from-blue-600 to-blue-800 shadow-lg sticky top-0 z-50 mx-auto px-4 sm:px-6 lg:px-8">
       <div className="flex justify-between items-center h-16">
-        {/* Logo */}
         <div className="shrink-0">
           <NavLink to="/" className="text-white text-2xl font-bold hover:text-gray-200 transition">
             Todo App

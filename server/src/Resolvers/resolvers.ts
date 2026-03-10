@@ -58,7 +58,7 @@ export const resolvers = {
         throw new Error("invalid password");
       }
 
-      const accessToken = jwt.sign({ userId: user.id }, accessSecret, { expiresIn: "60m" });
+      const accessToken = jwt.sign({ userId: user.id }, accessSecret, { expiresIn: "1m" });
 
       const refreshToken = jwt.sign({ userId: user.id }, refreshSecret, { expiresIn: "7d" });
 
@@ -66,6 +66,29 @@ export const resolvers = {
         accessToken,
         refreshToken,
       };
+    },
+
+    refreshToken: (_: unknown, { token }: { token: string }) => {
+      try {
+        const decoded: any = jwt.verify(token, refreshSecret);
+
+        const users = readUsers();
+        const user = users.find((u: any) => u.id === decoded.userId);
+
+        if (!user) {
+          throw new Error("user not found");
+        }
+
+        const accessToken = jwt.sign({ userId: user.id }, accessSecret, { expiresIn: "60m" });
+        const refreshToken = jwt.sign({ userId: user.id }, refreshSecret, { expiresIn: "7d" });
+
+        return {
+          accessToken,
+          refreshToken,
+        };
+      } catch (err) {
+        throw new Error("Invalid or expired refresh token");
+      }
     },
 
     addTodo: (_: unknown, { input }: any, context: any) => {

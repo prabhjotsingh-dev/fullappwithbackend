@@ -7,6 +7,8 @@ import { useMutation } from "@apollo/client/react";
 import { loginMutation } from "../api/querys";
 import CustomAlert from "@/components/commanComponents/CustomAlert";
 import { useState } from "react";
+import { UserContext } from "../contextApi/UserContextProvider";
+import { useContext } from "react";
 
 interface LoginUserDetails {
   username: string;
@@ -20,6 +22,7 @@ interface tokens {
 }
 const Login = () => {
   const navigator = useNavigate();
+  const {setLogedin} = useContext(UserContext);
   const [login] = useMutation<tokens>(loginMutation);
   const [openAlert, setOpenAlert] = useState<true | false>(false);
   const {
@@ -44,6 +47,7 @@ const Login = () => {
         const refreshToken = tokens.login.refreshToken;
         localStorage.setItem("accessToken", accessToken);
         localStorage.setItem("refreshToken", refreshToken);
+        setLogedin(true);
         navigator("/");
       }
     } catch (error) {
