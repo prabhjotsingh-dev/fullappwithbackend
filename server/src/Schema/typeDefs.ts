@@ -1,48 +1,27 @@
-export const typeDefs = `#graphql
+import { todoInputs } from "./Todos/todoInputs.js"
+import { todoTypes } from "./Todos/todoTypes.js"
+import { commanTypes } from "./comman/commanTypes.js"
+import { userInputs } from "./Users/userInputs.js"
+import { userTypes } from "./Users/userTypes.js"
 
-type Todo {
-  id: Int
-  todo: String
-  completed: Boolean
-  userId: Int
-}
-
-type User {
-  id: Int
-  firstName: String
-  lastName: String
-  username: String
-  image: String
-  todos: [Todo]
-}
-
-type AuthPayload {
-  accessToken: String
-  refreshToken: String
-}
-
-input AddTodoInput {
-  todo: String!
-  completed: Boolean!
-}
-
-input UpdateTodoInput {
-  id: Int!
-  todo: String
-  completed: Boolean
-}
+const QueryAndMutation = `#graphql
 
 type Query {
   users: [User]
-  user(id: Int!): User
-  todos: [Todo]
+  user(id: ID!): User
+  todos: [Todo] 
+  me: User
 }
-
+  
 type Mutation {
   login(username: String!, password: String!): AuthPayload
+  signup(input: NewUserInput!): User
+  resetPassword(username: String!, email: String!, password: String!): String
   refreshToken(token: String!): AuthPayload
   addTodo(input: AddTodoInput!): Todo
   updateTodo(input: UpdateTodoInput!): Todo
-  deleteTodo(id: Int!): Boolean
+  deleteTodo(id: ID!): Boolean
 }
-`;
+`
+
+export const typeDefs = [commanTypes, todoTypes, todoInputs, userTypes, userInputs, QueryAndMutation]

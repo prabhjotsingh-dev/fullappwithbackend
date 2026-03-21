@@ -20,6 +20,11 @@ const writeTodos = (todos: any) => {
 const readUsers = () => {
   return JSON.parse(fs.readFileSync(usersPath, "utf-8"));
 };
+const writeUsers = (users: any) => {
+
+  fs.writeFileSync(usersPath, JSON.stringify(users, null, 2));
+
+}
 
 export const resolvers = {
   Query: {
@@ -30,7 +35,6 @@ export const resolvers = {
 
     user: (_: unknown, { id }: { id: number }, context: any) => {
       requireAuth(context);
-
       const users = readUsers();
       return users.find((u: any) => u.id === id);
     },
@@ -41,6 +45,12 @@ export const resolvers = {
       const todos = readTodos();
 
       return todos.filter((t: any) => t.userId === context.user.userId);
+    },
+
+    me: (_: unknown, __: unknown, context: any) => {
+      requireAuth(context);
+      const users = readUsers();
+      return users.find((u: any) => u.id === context.user.userId);
     },
   },
 
@@ -60,12 +70,43 @@ export const resolvers = {
 
       const accessToken = jwt.sign({ userId: user.id }, accessSecret, { expiresIn: "1m" });
 
-      const refreshToken = jwt.sign({ userId: user.id }, refreshSecret, { expiresIn: "7d" });
+      const refreshToken = jwt.sign({ userId: user.id }, refreshSecret, { expiresIn: "1d" });
 
       return {
         accessToken,
         refreshToken,
       };
+    },
+    signup: (_: unknown, { input }: any, context: any) => {
+      const users = readUsers();
+      const user = users.find((u: any) => String(u.username) === String(input.username));
+      const email = users.find((u: any) => String(u.email) === String(input.email));
+      if (user) {
+        return "userName already exist"
+      }
+      if (email) {
+        return "email already exist"
+      }
+
+    },
+
+    resetPassword: (_: unknown, { username, email, password }: { username: string, email: string, password: string }) => {
+      const users = readUsers();
+
+      const user = users.find((u: any) => String(u.username) === String(username));
+
+
+      if (!user) {
+        return "user name not found"
+      } else {
+        if (String(user.email) !== String(email)) {
+          return "invalid email"
+        }
+        const userWithNewPassword = { ...user, password: password }
+        const updatedUsers = users.map((u: any) => u.id === user.id ? userWithNewPassword : u);
+        writeUsers(updatedUsers)
+        return "Password reset successfully";
+      }
     },
 
     refreshToken: (_: unknown, { token }: { token: string }) => {
@@ -80,7 +121,7 @@ export const resolvers = {
         }
 
         const accessToken = jwt.sign({ userId: user.id }, accessSecret, { expiresIn: "60m" });
-        const refreshToken = jwt.sign({ userId: user.id }, refreshSecret, { expiresIn: "7d" });
+        const refreshToken = jwt.sign({ userId: user.id }, refreshSecret, { expiresIn: "1d" });
 
         return {
           accessToken,
@@ -97,7 +138,7 @@ export const resolvers = {
       const todos = readTodos();
 
       const newTodo = {
-        id: todos.length + 1,
+        id: Date.now(),
         todo: input.todo,
         completed: input.completed,
         userId: context.user.userId,
@@ -115,7 +156,7 @@ export const resolvers = {
 
       const todos = readTodos();
 
-      const index = todos.findIndex((t: any) => t.id === input.id);
+      const index = todos.findIndex((t: any) => String(t.id) === String(input.id));
 
       if (index === -1) {
         throw new Error("todo not found");
@@ -124,10 +165,10 @@ export const resolvers = {
       if (todos[index].userId !== context.user.userId) {
         throw new Error("not authorized");
       }
-
+      const { id, ...todoUpdatedValues } = input
       const updatedTodo = {
         ...todos[index],
-        ...input,
+        ...todoUpdatedValues
       };
 
       todos[index] = updatedTodo;
@@ -137,12 +178,11 @@ export const resolvers = {
       return updatedTodo;
     },
 
-    deleteTodo: (_: unknown, { id }: { id: number }, context: any) => {
+    deleteTodo: (_: unknown, { id }: { id: number | string }, context: any) => {
       requireAuth(context);
-
       const todos = readTodos();
 
-      const todo = todos.find((t: any) => t.id === id);
+      const todo = todos.find((t: any) => String(t.id) === String(id));
 
       if (!todo) {
         throw new Error("todo not found");
@@ -152,7 +192,7 @@ export const resolvers = {
         throw new Error("not authorized");
       }
 
-      const filteredTodos = todos.filter((t: any) => t.id !== id);
+      const filteredTodos = todos.filter((t: any) => String(t.id) !== String(id));
 
       writeTodos(filteredTodos);
 

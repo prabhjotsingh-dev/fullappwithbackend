@@ -1,38 +1,27 @@
-import { useNavigate } from "react-router";
+import { type LoginCredentials, type tokens } from "@/assets/Types";
+import { UserContext } from "../contextApi/UserContextProvider";
+import { loginMutation } from "../apolloClient/querys";
+import { useMutation } from "@apollo/client/react";
+import { useNavigate, Link } from "react-router";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
-import { Link } from "react-router";
 import { useForm } from "react-hook-form";
-import { useMutation } from "@apollo/client/react";
-import { loginMutation } from "../api/querys";
-import CustomAlert from "@/components/commanComponents/CustomAlert";
-import { useState } from "react";
-import { UserContext } from "../contextApi/UserContextProvider";
-import { useContext } from "react";
+import { useContext } from "react"
+import { toast } from "sonner";
 
-interface LoginUserDetails {
-  username: string;
-  password: string;
-}
-interface tokens {
-  login: {
-    accessToken: string;
-    refreshToken: string;
-  };
-}
+
+
 const Login = () => {
-  const navigator = useNavigate();
-  const {setLogedin} = useContext(UserContext);
+  const navigate = useNavigate();
+  const { setLogedin } = useContext(UserContext);
   const [login] = useMutation<tokens>(loginMutation);
-  const [openAlert, setOpenAlert] = useState<true | false>(false);
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<LoginUserDetails>();
+  } = useForm<LoginCredentials>();
 
-  const onSubmit = async (data: LoginUserDetails) => {
-    console.log(data);
+  const onSubmit = async (data: LoginCredentials) => {
     try {
       const response = await login({
         variables: {
@@ -40,7 +29,6 @@ const Login = () => {
           password: data.password,
         },
       });
-      console.log(response);
       if (response.data) {
         const tokens = response.data;
         const accessToken = tokens.login.accessToken;
@@ -48,13 +36,13 @@ const Login = () => {
         localStorage.setItem("accessToken", accessToken);
         localStorage.setItem("refreshToken", refreshToken);
         setLogedin(true);
-        navigator("/");
+        navigate("/");
       }
     } catch (error) {
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
       console.error(error);
-      setOpenAlert(true);
+      toast.error("Invalid credentials");
     }
   };
 
@@ -107,7 +95,7 @@ const Login = () => {
                 name="remember"
                 className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                 checked
-                onChange={() => {}}
+                onChange={() => { }}
               />
               <label htmlFor="remember" className="text-sm text-muted-foreground">
                 Remember me
@@ -130,7 +118,6 @@ const Login = () => {
           </Link>
         </div>
       </div>
-      <CustomAlert openAlert={openAlert} onClick={() => setOpenAlert(false)} description="wrong Password" title="wrongpass" />
     </div>
   );
 };

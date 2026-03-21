@@ -3,9 +3,10 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { useMutation } from "@apollo/client/react";
-import { addTodoMutation, deleteTodoMutation } from "../api/querys";
-import { updateTodoMutation } from "../api/querys";
+import { addTodoMutation, deleteTodoMutation } from "../apolloClient/querys";
+import { updateTodoMutation } from "../apolloClient/querys";
 import { Checkbox } from "./ui/checkbox";
+import { toast } from "sonner";
 
 type TodoChangeDialogBoxProps = {
   Trigger?: string | null;
@@ -31,13 +32,12 @@ const TodoChangeDialogBox = ({
   const [deleteTodo] = useMutation(deleteTodoMutation);
   const [value, setValue] = useState("");
 
-  /* const { userData } = useContext(UserContext)!; */
   if (typeCheckbox) {
     return (
       <Checkbox
         checked={todoCompleted}
         onCheckedChange={async () => {
-          const response = await updateTodo({
+          await updateTodo({
             variables: {
               input: {
                 id: id as number,
@@ -45,42 +45,43 @@ const TodoChangeDialogBox = ({
               },
             },
           });
-          console.log(response);
+
         }}
       />
     );
   }
 
   const handleClick = async () => {
+
     if (Trigger === "Edit") {
-      /* setTodos((prev) => prev.map((t) => (t.id === id ? { ...t, todo: value } : t))); */
-      const response = await updateTodo({
+      await updateTodo({
         variables: {
           input: {
-            id: id as number,
+            id: Number(id),
             todo: value,
           },
         },
       });
-      console.log(response);
-    } else if (Trigger === "Delete") {
-      /* setTodos((prev) => prev.filter((t) => t.id !== id)); */
-      const response = await deleteTodo({
-        variables: { id: id as number },
-      });
-      console.log(response);
-    } else if (Trigger === "Add New Todo") {
-      /* if (userData) { */
-      const newTodo = { todo: value, completed: false, userId: 1 };
-      /* setTodos((prev) => [...prev, newTodo]); */
+      toast("Todo edited Successfully refresh the page to see the changes", { position: "top-left" });
 
-      const response = await addTodo({
+    } else if (Trigger === "Delete") {
+
+      await deleteTodo({
+        variables: { id: id },
+      });
+      toast("Todo Deleted Successfully refresh the page to see the changes", { position: "top-left" });
+
+    } else if (Trigger === "Add New Todo") {
+
+      const newTodo = { todo: value, completed: false };
+      await addTodo({
         variables: {
           input: newTodo,
         },
       });
-      console.log(response);
-      /* } */
+      toast("Todo Added Successfully refresh the page to see the changes", { position: "top-left" });
+
+
     }
   };
 

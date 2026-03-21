@@ -7,7 +7,7 @@ import { useContext } from "react";
 import { UserContext } from "../contextApi/UserContextProvider";
 
 const Navbar = () => {
-  const navigator = useNavigate();
+  const navigate = useNavigate();
 
   const { setUserData, logedin, setLogedin } = useContext(UserContext);
 
@@ -30,18 +30,18 @@ const Navbar = () => {
       username: "",
       password: "",
     });
-    navigator("/login");
+    navigate("/login");
   };
   const navLinks = logedin
     ? [
-        { name: "Home", path: "/" },
-        { name: "Dashboard", path: "/Dashboard" },
-      ]
+      { name: "Home", path: "/" },
+      { name: "Dashboard", path: "/Dashboard" },
+    ]
     : [
-        { name: "Home", path: "/" },
-        { name: "Signup", path: "/Signup" },
-        { name: "Login", path: "/Login" },
-      ];
+      { name: "Home", path: "/" },
+      { name: "Signup", path: "/Signup" },
+      { name: "Login", path: "/Login" },
+    ];
 
   return (
     <nav className="bg-linear-to-r from-blue-600 to-blue-800 shadow-lg sticky top-0 z-50 mx-auto px-4 sm:px-6 lg:px-8">
@@ -58,8 +58,7 @@ const Navbar = () => {
                 key={link.path}
                 to={link.path}
                 className={({ isActive }) =>
-                  ` px-4 py-2 rounded-md text-sm font-medium transition duration-300 ${
-                    isActive ? "bg-white text-blue-600 font-semibold" : "text-white hover:bg-blue-700 hover:text-white"
+                  ` px-4 py-2 rounded-md text-sm font-medium transition duration-300 ${isActive ? "bg-white text-blue-600 font-semibold" : "text-white hover:bg-blue-700 hover:text-white"
                   }`
                 }>
                 {link.name}

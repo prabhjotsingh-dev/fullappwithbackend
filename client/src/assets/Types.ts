@@ -98,3 +98,17 @@ export interface TodoData {
   completed: boolean;
   userId: number;
 }
+export interface todos {
+  todos: TodoData[];
+}
+
+export interface LoginCredentials {
+  username: string;
+  password: string;
+}
+export interface tokens {
+  login: {
+    accessToken: string;
+    refreshToken: string;
+  };
+}

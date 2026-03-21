@@ -1,14 +1,14 @@
+import { resetPasswordMutation } from "@/apolloClient/querys";
+import { useMutation } from "@apollo/client/react";
+import { Link, useNavigate } from "react-router";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
-import { UserContext } from "../contextApi/UserContextProvider";
-import { useContext } from "react";
-import { Link, useNavigate } from "react-router";
-import { userLogin } from "../api/api";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 interface changePasswordDetails {
   username: string;
-  resetKey: string;
+  email: string;
   newPassword: string;
   confirmPassword: string;
 }
@@ -22,10 +22,10 @@ const ForgetModule = () => {
   } = useForm<changePasswordDetails>();
 
   const newPasswprd = watch("newPassword");
+  const [ResetPassword] = useMutation(resetPasswordMutation);
 
-  const navigator = useNavigate();
+  const navigate = useNavigate();
 
-  const { setUserData, setLogedin } = useContext(UserContext);
 
   const inputs = [
     {
@@ -35,10 +35,10 @@ const ForgetModule = () => {
       placeholder: "User Name",
     },
     {
-      label: "Reset key",
-      type: "text",
-      id: "resetKey",
-      placeholder: "Reset key",
+      label: "Email",
+      type: "email",
+      id: "email",
+      placeholder: "Email",
     },
     {
       label: "New Password",
@@ -55,28 +55,27 @@ const ForgetModule = () => {
   ];
 
   const onSubmit = async (data: changePasswordDetails) => {
-    console.log(data);
-    const { username } = data;
-    const logindata = { username, password: username + "pass" };
-
-    try {
-      const apiResponse = await userLogin(logindata);
-
-      if (apiResponse) {
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
-        localStorage.removeItem("image");
-        localStorage.removeItem("userInfo");
-      }
-      localStorage.setItem("accessToken", apiResponse.accessToken);
-      localStorage.setItem("refreshToken", apiResponse.refreshToken);
-      localStorage.setItem("image", apiResponse.image);
-      setUserData(apiResponse);
-      setLogedin(true);
-      navigator("/");
-    } catch {
-      navigator("/login");
+    const resetPasswordData = {
+      username: data.username,
+      email: data.email,
+      password: data.newPassword,
     }
+    try {
+      const response = await ResetPassword({
+        variables: resetPasswordData
+      });
+      const meassage = (response.data as { resetPassword: string }) || { resetPassword: "" }
+
+      if (meassage?.resetPassword === "Password reset successfully") {
+        toast.success(meassage?.resetPassword, { position: "top-center" });
+        navigate("/login");
+      } else {
+        toast.error(meassage?.resetPassword, { position: "top-center" });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+
   };
 
   return (

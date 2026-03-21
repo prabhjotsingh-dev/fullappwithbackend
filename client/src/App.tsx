@@ -3,7 +3,7 @@ import { RouterProvider } from "react-router/dom";
 import UserContextProvider from "./contextApi/UserContextProvider";
 import { ThemeProvider } from "./contextApi/themeProvider";
 import { ApolloProvider } from "@apollo/client/react";
-import { client } from "./api/ApolloClient";
+import { client } from "./apolloClient/ApolloClient";
 
 function App() {
   return (
