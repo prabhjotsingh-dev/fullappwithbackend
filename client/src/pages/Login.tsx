@@ -1,19 +1,18 @@
 import { type LoginCredentials, type tokens } from "@/assets/Types";
 import { UserContext } from "../contextApi/UserContextProvider";
-import { loginMutation } from "../apolloClient/querys";
-import { useMutation } from "@apollo/client/react";
+import { loginMutation, getCurrentUser } from "../apolloClient/querys";
+import { useMutation, useQuery } from "@apollo/client/react";
 import { useNavigate, Link } from "react-router";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { useForm } from "react-hook-form";
-import { useContext } from "react"
+import { useContext, useEffect } from "react";
 import { toast } from "sonner";
-
-
+import { type UserDetails } from "@/assets/Types";
 
 const Login = () => {
   const navigate = useNavigate();
-  const { setLogedin } = useContext(UserContext);
+  const { logedin, setLogedin } = useContext(UserContext);
   const [login] = useMutation<tokens>(loginMutation);
   const {
     register,
@@ -45,18 +44,44 @@ const Login = () => {
       toast.error("Invalid credentials");
     }
   };
+  const { error, data } = useQuery<{ me: UserDetails }>(getCurrentUser);
+  useEffect(() => {
+    const checkLoggedIn = () => {
+      const logedIn = data?.me;
+      if (logedIn || logedin) {
+        toast("You are already logged in", { position: "top-left" });
+        navigate("/");
+      }
+    };
+    if (error) {
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      setLogedin(false);
+      toast("Session expired, Please login again", { position: "top-left" });
+    }
+    checkLoggedIn();
+  }, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-slate-50 via-sky-50 to-indigo-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       <div className="w-full max-w-md p-8 space-y-6 bg-card rounded-lg border shadow-sm">
         <div className="space-y-2 text-center">
           <h1 className="text-3xl font-bold">Welcome back</h1>
-          <p className="text-muted-foreground">Enter your credentials to access your account</p>
+          <p className="text-muted-foreground">
+            Enter your credentials to access your account
+          </p>
         </div>
 
-        <form className="space-y-4" onSubmit={handleSubmit(onSubmit)} noValidate>
+        <form
+          className="space-y-4"
+          onSubmit={handleSubmit(onSubmit)}
+          noValidate
+        >
           <div className="space-y-2">
-            <label htmlFor="username" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+            <label
+              htmlFor="username"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
               Username
             </label>
             <Input
@@ -66,10 +91,17 @@ const Login = () => {
               autoComplete="username"
               {...register("username", { required: `User Name is required` })}
             />
-            {errors.username && <p className="text-red-500 text-sm">{errors.username.message as string}</p>}
+            {errors.username && (
+              <p className="text-red-500 text-sm">
+                {errors.username.message as string}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
-            <label htmlFor="password" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+            <label
+              htmlFor="password"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
               Password
             </label>
             <Input
@@ -84,7 +116,11 @@ const Login = () => {
                 },
               })}
             />
-            {errors.password && <p className="text-red-500 text-sm">{errors.password.message as string}</p>}
+            {errors.password && (
+              <p className="text-red-500 text-sm">
+                {errors.password.message as string}
+              </p>
+            )}
           </div>
 
           <div className="flex items-center justify-between">
@@ -95,13 +131,19 @@ const Login = () => {
                 name="remember"
                 className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                 checked
-                onChange={() => { }}
+                onChange={() => {}}
               />
-              <label htmlFor="remember" className="text-sm text-muted-foreground">
+              <label
+                htmlFor="remember"
+                className="text-sm text-muted-foreground"
+              >
                 Remember me
               </label>
             </div>
-            <Link to="/forgetpassword" className="text-sm text-primary hover:underline">
+            <Link
+              to="/forgetpassword"
+              className="text-sm text-primary hover:underline"
+            >
               Forgot password?
             </Link>
           </div>
