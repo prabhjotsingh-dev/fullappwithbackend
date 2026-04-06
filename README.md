@@ -1,75 +1,53 @@
-# React + TypeScript + Vite
+# Fullstack Apollo GraphQL + Vite React App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, full-stack monorepo application built for rapid development and high performance. It features a Vite + React frontend communicating with an Apollo GraphQL backend, all written in TypeScript.
 
-Currently, two official plugins are available:
+## 🚀 Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Monorepo Architecture:** Manages both client and server in a single repository using npm workspaces.
+- **GraphQL API:** Type-safe, efficient data fetching using Apollo Server and schemas.
+- **JWT Authentication:** Secure login flow with short-lived Access Tokens and long-lived Refresh Tokens.
+- **Modern Frontend:** Lightning-fast builds with Vite, React, and TypeScript.
+- **Beautiful UI:** Accessible, customizable components powered by shadcn/ui and Tailwind CSS.
+- **Smart Caching:** Global state management and request caching handled by Apollo Client.
 
-## React Compiler
+## 🛠️ Tech Stack
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+### Root Workspace
 
-Note: This will impact Vite dev & build performances.
+- `npm workspaces` — Dependency management
+- `concurrently` — Running frontend and backend simultaneously
 
-## Expanding the ESLint configuration
+### Backend (`/server`)
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- `@apollo/server` & `graphql` — API layer
+- `jsonwebtoken` — Auth and session management
+- `typescript` & `ts-node` — Static typing and execution
+- Node.js (ES Modules)
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Frontend (`/client`)
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- `react` & `vite` — UI library and build tool
+- `@apollo/client` — GraphQL client and caching engine
+- `shadcn/ui` & `tailwindcss` — UI component system
+- `typescript` — Static typing
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 📁 Project Structure
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```text
+fullappwithbackend/
+├── package.json          # Root workspace configuration
+├── client/               # Vite React Frontend
+│   ├── src/
+│   │   ├── apolloClient/ # Apollo setup & Auth Links
+│   │   ├── components/   # shadcn/ui components
+│   │   └── main.tsx
+│   └── package.json
+└── server/               # Apollo GraphQL Backend
+    ├── src/
+    │   ├── Data/         # Local JSON database files
+    │   ├── Schema/       # typeDefs and resolvers
+    │   ├── utils/        # Auth middleware
+    │   └── index.ts      # Apollo Server setup
+    └── package.json
 ```
